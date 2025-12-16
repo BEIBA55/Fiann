@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { IUser } from '../models/User';
 
 export interface JWTPayload {
@@ -14,9 +14,12 @@ export const generateToken = (user: IUser): string => {
     role: user.role,
   };
 
-  return jwt.sign(payload, process.env.JWT_SECRET || 'secret', {
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-  });
+  const secret = process.env.JWT_SECRET || 'secret';
+  const expiresIn = (process.env.JWT_EXPIRES_IN || '7d') as string;
+  
+  return jwt.sign(payload, secret, {
+    expiresIn: expiresIn,
+  } as SignOptions);
 };
 
 export const verifyToken = (token: string): JWTPayload => {

@@ -159,9 +159,10 @@ export const eventResolvers = {
         }
 
         if (validatedInput.date) {
-          validatedInput.date = new Date(validatedInput.date);
+          const dateValue = new Date(validatedInput.date as string);
+          (event as any).date = dateValue;
+          delete (validatedInput as any).date;
         }
-
         Object.assign(event, validatedInput);
         await event.save();
         await event.populate('organizerId', 'name email avatar');
