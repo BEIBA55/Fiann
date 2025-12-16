@@ -1,26 +1,26 @@
-# Event Management System
+# Система управления событиями (Event Management System)
 
-A full-stack MERN application for managing and discovering events, built with TypeScript, GraphQL, Next.js, and MongoDB.
+Полнофункциональное MERN приложение для управления и поиска событий, построенное на TypeScript, GraphQL, Next.js и MongoDB.
 
-## 🎯 Project Overview
+## 🎯 Обзор проекта
 
-EventHub is a comprehensive event management platform that allows users to:
-- **Discover Events**: Browse published events by category and status
-- **Create Events**: Organizers can create and manage their events
-- **Register**: Users can register for events they're interested in
-- **Comment & Rate**: Share feedback and rate events
-- **Real-time Updates**: Get instant notifications about new registrations and comments
+EventHub — это платформа для управления событиями, которая позволяет пользователям:
+- **Открывать события**: Просматривать опубликованные события по категориям и статусу
+- **Создавать события**: Организаторы могут создавать и управлять своими событиями
+- **Регистрироваться**: Пользователи могут регистрироваться на интересующие их события
+- **Комментировать и оценивать**: Делиться отзывами и оценивать события
+- **Обновления в реальном времени**: Получать мгновенные уведомления о новых регистрациях и комментариях
 
-## 🏗️ Architecture
+## 🏗️ Архитектура
 
-### Tech Stack
+### Технологический стек
 
 **Backend:**
 - Node.js + Express.js
 - GraphQL (Apollo Server)
 - MongoDB + Mongoose
 - TypeScript
-- JWT Authentication
+- JWT Аутентификация
 - GraphQL Subscriptions (WebSocket)
 
 **Frontend:**
@@ -29,205 +29,205 @@ EventHub is a comprehensive event management platform that allows users to:
 - TypeScript
 - TailwindCSS
 - Apollo Client
-- Zustand (State Management)
-- React Hook Form + Zod (Form Validation)
+- Zustand (Управление состоянием)
+- React Hook Form + Zod (Валидация форм)
 
 **DevOps:**
 - Docker & Docker Compose
-- Jest (Testing)
+- Jest (Тестирование)
 
-## 📊 Data Models
+## 📊 Модели данных
 
-### User
-- `name` (String, required)
-- `email` (String, unique, required)
-- `password` (String, hashed, required)
+### User (Пользователь)
+- `name` (String, обязательное)
+- `email` (String, уникальное, обязательное)
+- `password` (String, хешированный, обязательное)
 - `role` (Enum: USER, ORGANIZER, ADMIN)
-- `avatar` (String, optional)
-- `isDeleted` (Boolean, soft delete)
+- `avatar` (String, опциональное)
+- `isDeleted` (Boolean, мягкое удаление)
 
-### Event
-- `title` (String, required)
-- `description` (String, required)
-- `date` (Date, required, future date)
-- `location` (String, required)
-- `capacity` (Number, required)
-- `organizerId` (ObjectId, ref: User)
+### Event (Событие)
+- `title` (String, обязательное)
+- `description` (String, обязательное)
+- `date` (Date, обязательное, дата в будущем)
+- `location` (String, обязательное)
+- `capacity` (Number, обязательное)
+- `organizerId` (ObjectId, ссылка на User)
 - `status` (Enum: DRAFT, PUBLISHED, CANCELLED, COMPLETED)
 - `category` (Enum: CONFERENCE, WORKSHOP, SEMINAR, NETWORKING, CONCERT, SPORTS, OTHER)
-- `imageUrl` (String, optional)
-- `isDeleted` (Boolean, soft delete)
+- `imageUrl` (String, опциональное)
+- `isDeleted` (Boolean, мягкое удаление)
 
-### Registration
-- `userId` (ObjectId, ref: User)
-- `eventId` (ObjectId, ref: Event)
+### Registration (Регистрация)
+- `userId` (ObjectId, ссылка на User)
+- `eventId` (ObjectId, ссылка на Event)
 - `status` (Enum: PENDING, CONFIRMED, CANCELLED, ATTENDED)
 - `registeredAt` (Date)
-- `notes` (String, optional)
-- `isDeleted` (Boolean, soft delete)
+- `notes` (String, опциональное)
+- `isDeleted` (Boolean, мягкое удаление)
 
-### Comment
-- `userId` (ObjectId, ref: User)
-- `eventId` (ObjectId, ref: Event)
-- `content` (String, required)
-- `rating` (Number, 1-5, optional)
-- `isDeleted` (Boolean, soft delete)
+### Comment (Комментарий)
+- `userId` (ObjectId, ссылка на User)
+- `eventId` (ObjectId, ссылка на Event)
+- `content` (String, обязательное)
+- `rating` (Number, 1-5, опциональное)
+- `isDeleted` (Boolean, мягкое удаление)
 
-### Relationships
-- User 1:N Event (organizer)
-- User N:M Event (through Registration)
+### Связи между моделями
+- User 1:N Event (организатор)
+- User N:M Event (через Registration)
 - Event 1:N Comment
 - Event 1:N Registration
 
 ## 🔌 GraphQL API
 
 ### Queries (6+)
-- `me` - Get current user
-- `users` - List all users
-- `user(id)` - Get user by ID
-- `events(status, category, limit, offset)` - List events with filters
-- `event(id)` - Get event by ID
-- `myEvents` - Get current user's events
-- `registrations(eventId, userId)` - List registrations
-- `registration(id)` - Get registration by ID
-- `myRegistrations` - Get current user's registrations
-- `comments(eventId)` - List comments for an event
-- `comment(id)` - Get comment by ID
+- `me` - Получить текущего пользователя
+- `users` - Список всех пользователей
+- `user(id)` - Получить пользователя по ID
+- `events(status, category, limit, offset)` - Список событий с фильтрами
+- `event(id)` - Получить событие по ID
+- `myEvents` - Получить события текущего пользователя
+- `registrations(eventId, userId)` - Список регистраций
+- `registration(id)` - Получить регистрацию по ID
+- `myRegistrations` - Получить регистрации текущего пользователя
+- `comments(eventId)` - Список комментариев для события
+- `comment(id)` - Получить комментарий по ID
 
 ### Mutations (6+)
-- `register(input)` - Register new user
-- `login(input)` - Authenticate user
-- `createEvent(input)` - Create new event
-- `updateEvent(id, input)` - Update event
-- `deleteEvent(id)` - Soft delete event
-- `createRegistration(input)` - Register for event
-- `updateRegistration(id, input)` - Update registration status
-- `cancelRegistration(id)` - Cancel registration
-- `createComment(input)` - Add comment
-- `updateComment(id, input)` - Update comment
-- `deleteComment(id)` - Delete comment
+- `register(input)` - Регистрация нового пользователя
+- `login(input)` - Аутентификация пользователя
+- `createEvent(input)` - Создать новое событие
+- `updateEvent(id, input)` - Обновить событие
+- `deleteEvent(id)` - Мягкое удаление события
+- `createRegistration(input)` - Зарегистрироваться на событие
+- `updateRegistration(id, input)` - Обновить статус регистрации
+- `cancelRegistration(id)` - Отменить регистрацию
+- `createComment(input)` - Добавить комментарий
+- `updateComment(id, input)` - Обновить комментарий
+- `deleteComment(id)` - Удалить комментарий
 
 ### Subscriptions (3+)
-- `eventCreated` - New event created
-- `eventUpdated` - Event updated
-- `registrationCreated(eventId)` - New registration for event
-- `registrationUpdated(eventId)` - Registration updated
-- `commentAdded(eventId)` - New comment on event
+- `eventCreated` - Новое событие создано
+- `eventUpdated` - Событие обновлено
+- `registrationCreated(eventId)` - Новая регистрация на событие
+- `registrationUpdated(eventId)` - Регистрация обновлена
+- `commentAdded(eventId)` - Новый комментарий к событию
 
-## 🚀 Getting Started
+## 🚀 Быстрый старт
 
-### Prerequisites
+### Требования
 - Docker & Docker Compose
-- Node.js 18+ (for local development)
+- Node.js 18+ (для локальной разработки)
 
-### Quick Start with Docker
+### Запуск через Docker
 
-1. **Clone the repository**
+1. **Клонировать репозиторий**
 ```bash
 git clone <repository-url>
 cd Final
 ```
 
-2. **Start all services**
+2. **Запустить все сервисы**
 ```bash
 docker-compose up
 ```
 
-This will start:
-- MongoDB on port 27017
-- GraphQL API on http://localhost:4000
-- Next.js Client on http://localhost:3000
+Это запустит:
+- MongoDB на порту 27017
+- GraphQL API на http://localhost:4000
+- Next.js Client на http://localhost:3000
 
-3. **Seed the database** (optional)
+3. **Заполнить базу данных тестовыми данными** (опционально)
 ```bash
-# In a new terminal
+# В новом терминале
 docker exec -it event-management-api npm run seed
 ```
 
-### Local Development
+### Локальная разработка
 
-#### Backend Setup
+#### Настройка Backend
 ```bash
 cd server
 npm install
 cp .env.example .env
-# Edit .env with your configuration
+# Отредактируйте .env с вашей конфигурацией
 npm run dev
 ```
 
-#### Frontend Setup
+#### Настройка Frontend
 ```bash
 cd client
 npm install
 cp .env.example .env.local
-# Edit .env.local with your configuration
+# Отредактируйте .env.local с вашей конфигурацией
 npm run dev
 ```
 
-## 🧪 Testing
+## 🧪 Тестирование
 
-### Run Tests
+### Запуск тестов
 ```bash
 cd server
 npm test
 ```
 
-### Test Coverage
+### Покрытие тестами
 ```bash
 cd server
 npm run test:coverage
 ```
 
-**Test Suite:**
-- 10+ Unit tests for resolvers
-- 1+ Integration test for event flow
-- Tests cover authentication, events, registrations, and comments
+**Набор тестов:**
+- 10+ Unit тестов для резолверов
+- 1+ Интеграционный тест для потока событий
+- Тесты покрывают аутентификацию, события, регистрации и комментарии
 
-## 📱 Key Screens
+## 📱 Ключевые экраны
 
-1. **Home Page** (`/`) - Landing page with navigation
-2. **Login** (`/login`) - User authentication
-3. **Register** (`/register`) - New user registration
-4. **Events List** (`/events`) - Browse all published events
-5. **Event Details** (`/events/[id]`) - View event, register, comment
-6. **Create Event** (`/events/create`) - Organizers create events
-7. **Profile** (`/profile`) - User profile and registrations
+1. **Главная страница** (`/`) - Лендинг с навигацией
+2. **Вход** (`/login`) - Аутентификация пользователя
+3. **Регистрация** (`/register`) - Регистрация нового пользователя
+4. **Список событий** (`/events`) - Просмотр всех опубликованных событий
+5. **Детали события** (`/events/[id]`) - Просмотр события, регистрация, комментарии
+6. **Создание события** (`/events/create`) - Организаторы создают события
+7. **Профиль** (`/profile`) - Профиль пользователя и регистрации
 
-## 🔄 Real-time Features
+## 🔄 Функции реального времени
 
-### Testing Subscriptions
+### Тестирование подписок
 
-1. **Open Event Details Page**
-   - Navigate to any published event
-   - Open browser console to see subscription logs
+1. **Открыть страницу деталей события**
+   - Перейдите к любому опубликованному событию
+   - Откройте консоль браузера для просмотра логов подписок
 
-2. **Test Comment Subscription**
-   - Open event page in two browser windows
-   - In window 1: Add a comment
-   - In window 2: See the comment appear in real-time
+2. **Тест подписки на комментарии**
+   - Откройте страницу события в двух окнах браузера
+   - В окне 1: Добавьте комментарий
+   - В окне 2: Увидите комментарий в реальном времени
 
-3. **Test Registration Subscription**
-   - Open event page in two windows
-   - In window 1: Register for the event
-   - In window 2: See registration count update
+3. **Тест подписки на регистрации**
+   - Откройте страницу события в двух окнах
+   - В окне 1: Зарегистрируйтесь на событие
+   - В окне 2: Увидите обновление счетчика регистраций
 
 ### WebSocket Endpoint
-- **Development**: `ws://localhost:4000/graphql`
-- **Production**: `wss://your-domain.com/graphql`
+- **Разработка**: `ws://localhost:4000/graphql`
+- **Продакшн**: `wss://your-domain.com/graphql`
 
-## 🔐 Authentication
+## 🔐 Аутентификация
 
-### Test Credentials (after seeding)
-- **Admin**: `admin@example.com` / `password123`
-- **Organizer**: `organizer@example.com` / `password123`
-- **User**: `jane@example.com` / `password123`
+### Тестовые учетные данные (после заполнения базы)
+- **Администратор**: `admin@example.com` / `password123`
+- **Организатор**: `organizer@example.com` / `password123`
+- **Пользователь**: `jane@example.com` / `password123`
 
-### JWT Token
-- Stored in localStorage after login
-- Sent in Authorization header: `Bearer <token>`
-- Expires in 7 days (configurable)
+### JWT Токен
+- Хранится в localStorage после входа
+- Отправляется в заголовке Authorization: `Bearer <token>`
+- Истекает через 7 дней (настраивается)
 
-## 📝 Environment Variables
+## 📝 Переменные окружения
 
 ### Server (.env)
 ```env
@@ -247,109 +247,108 @@ NEXT_PUBLIC_WS_URL=ws://localhost:4000/graphql
 
 ## 🐳 Docker
 
-### Build Images
+### Сборка образов
 ```bash
 docker-compose build
 ```
 
-### Start Services
+### Запуск сервисов
 ```bash
 docker-compose up -d
 ```
 
-### View Logs
+### Просмотр логов
 ```bash
 docker-compose logs -f
 ```
 
-### Stop Services
+### Остановка сервисов
 ```bash
 docker-compose down
 ```
 
-### Clean Volumes
+### Очистка томов
 ```bash
 docker-compose down -v
 ```
 
-## 📦 Project Structure
+## 📦 Структура проекта
 
 ```
 Final/
 ├── server/
 │   ├── src/
-│   │   ├── models/          # Mongoose models
-│   │   ├── graphql/          # GraphQL schema & resolvers
-│   │   ├── utils/            # Auth, errors, validation
-│   │   ├── config/           # Database config
-│   │   ├── scripts/          # Seed script
-│   │   ├── __tests__/        # Jest tests
-│   │   └── index.ts          # Entry point
+│   │   ├── models/          # Mongoose модели
+│   │   ├── graphql/          # GraphQL схема и резолверы
+│   │   ├── utils/            # Аутентификация, ошибки, валидация
+│   │   ├── config/           # Конфигурация базы данных
+│   │   ├── scripts/          # Скрипт заполнения базы
+│   │   ├── __tests__/        # Jest тесты
+│   │   └── index.ts          # Точка входа
 │   ├── Dockerfile
 │   └── package.json
 ├── client/
-│   ├── app/                  # Next.js App Router pages
-│   ├── components/           # React components
-│   ├── lib/                  # Apollo Client, GraphQL queries
-│   ├── store/                # Zustand stores
+│   ├── app/                  # Страницы Next.js App Router
+│   ├── components/           # React компоненты
+│   ├── lib/                  # Apollo Client, GraphQL запросы
+│   ├── store/                # Zustand хранилища
 │   ├── Dockerfile
 │   └── package.json
 └── docker-compose.yml
 ```
 
-## 🛠️ Scripts
+## 🛠️ Скрипты
 
 ### Server
-- `npm run dev` - Start development server
-- `npm run build` - Build TypeScript
-- `npm start` - Start production server
-- `npm test` - Run tests
-- `npm run seed` - Seed database
+- `npm run dev` - Запустить сервер разработки
+- `npm run build` - Собрать TypeScript
+- `npm start` - Запустить продакшн сервер
+- `npm test` - Запустить тесты
+- `npm run seed` - Заполнить базу данных
 
 ### Client
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint
+- `npm run dev` - Запустить сервер разработки
+- `npm run build` - Собрать для продакшна
+- `npm start` - Запустить продакшн сервер
+- `npm run lint` - Запустить ESLint
 
-## 🎨 Features
+## 🎨 Функции
 
 - ✅ TypeScript strict mode
-- ✅ GraphQL with Subscriptions
-- ✅ JWT Authentication & Authorization
-- ✅ Form Validation (Zod + React Hook Form)
-- ✅ Real-time Updates (WebSocket)
-- ✅ Responsive Design (TailwindCSS)
-- ✅ State Management (Zustand)
-- ✅ Soft Delete
-- ✅ Error Handling
-- ✅ Docker Support
-- ✅ Comprehensive Tests
+- ✅ GraphQL с Subscriptions
+- ✅ JWT Аутентификация и авторизация
+- ✅ Валидация форм (Zod + React Hook Form)
+- ✅ Обновления в реальном времени (WebSocket)
+- ✅ Адаптивный дизайн (TailwindCSS)
+- ✅ Управление состоянием (Zustand)
+- ✅ Мягкое удаление
+- ✅ Обработка ошибок
+- ✅ Поддержка Docker
+- ✅ Комплексные тесты
 
-## 📄 License
+## 📄 Лицензия
 
 ISC
 
-## 👥 Team
+## 👥 Команда
 
-**Contributors:**
-- [Your Name] - Backend, GraphQL, Testing
-- [Partner Name] - Frontend, UI/UX, Subscriptions
+**Участники:**
+- Мейрамбек - Backend, GraphQL, Тестирование
+- Бейбарс - Frontend, UI/UX, Subscriptions
 
-## 🔗 Production Demo
+## 🔗 Демо продакшн
 
-**Frontend**: [Add your production URL]
-**GraphQL Endpoint**: [Add your GraphQL endpoint]
-**WebSocket**: [Add your WS endpoint]
+**Frontend**: [Добавьте ваш URL продакшна]
+**GraphQL Endpoint**: [Добавьте ваш GraphQL endpoint]
+**WebSocket**: [Добавьте ваш WS endpoint]
 
-## 📚 Additional Resources
+## 📚 Дополнительные ресурсы
 
-- [GraphQL Documentation](https://graphql.org/)
-- [Next.js Documentation](https://nextjs.org/docs)
+- [Документация GraphQL](https://graphql.org/)
+- [Документация Next.js](https://nextjs.org/docs)
 - [Apollo Client](https://www.apollographql.com/docs/react/)
 - [MongoDB](https://www.mongodb.com/docs/)
 
 ---
 
-**Note**: Remember to change JWT_SECRET and other sensitive values in production!
-
+**Примечание**: Не забудьте изменить JWT_SECRET и другие секретные значения в продакшне!
