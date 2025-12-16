@@ -20,7 +20,7 @@ const categories = [
 ];
 
 export default function EventsPage() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, hasHydrated, token } = useAuthStore();
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   
@@ -30,13 +30,14 @@ export default function EventsPage() {
       category: selectedCategory || undefined,
       limit: 50 
     },
+    skip: !hasHydrated,
   });
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (hasHydrated && !isAuthenticated && !token) {
       router.push('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [hasHydrated, isAuthenticated, token, router]);
 
   if (loading) {
     return (

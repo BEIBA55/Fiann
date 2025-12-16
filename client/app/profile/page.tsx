@@ -10,13 +10,13 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 
 export default function ProfilePage() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, hasHydrated, token } = useAuthStore();
   const router = useRouter();
   const { data, loading } = useQuery(ME, {
-    skip: !isAuthenticated,
+    skip: !hasHydrated || !isAuthenticated,
   });
   const { data: registrationsData, refetch: refetchRegistrations } = useQuery(MY_REGISTRATIONS, {
-    skip: !isAuthenticated,
+    skip: !hasHydrated || !isAuthenticated,
   });
 
   const [cancelRegistration, { loading: canceling }] = useMutation(CANCEL_REGISTRATION, {
@@ -26,10 +26,10 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (hasHydrated && !isAuthenticated && !token) {
       router.push('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [hasHydrated, isAuthenticated, token, router]);
 
   if (loading) {
     return (

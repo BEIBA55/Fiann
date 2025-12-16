@@ -11,10 +11,10 @@ import { format } from 'date-fns';
 import Link from 'next/link';
 
 export default function MyEventsPage() {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, hasHydrated, token, user } = useAuthStore();
   const router = useRouter();
   const { data, loading, refetch } = useQuery(MY_EVENTS, {
-    skip: !isAuthenticated,
+    skip: !hasHydrated || !isAuthenticated,
   });
 
   const [updateEvent, { loading: updating }] = useMutation(UPDATE_EVENT, {
@@ -29,10 +29,14 @@ export default function MyEventsPage() {
   });
 
   useEffect(() => {
-    if (!isAuthenticated || (user?.role !== 'ORGANIZER' && user?.role !== 'ADMIN')) {
-      router.push('/events');
+    if (hasHydrated) {
+      if (!isAuthenticated && !token) {
+        router.push('/login');
+      } else if (isAuthenticated && user?.role !== 'ORGANIZER' && user?.role !== 'ADMIN') {
+        router.push('/events');
+      }
     }
-  }, [isAuthenticated, user, router]);
+  }, [hasHydrated, isAuthenticated, token, user, router]);
 
   const handleStatusChange = async (eventId: string, newStatus: string) => {
     if (confirm(`Изменить статус события на "${newStatus}"?`)) {

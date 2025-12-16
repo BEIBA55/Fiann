@@ -13,7 +13,7 @@ import { format } from 'date-fns';
 export default function EventDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, hasHydrated, token, user } = useAuthStore();
   const [commentText, setCommentText] = useState('');
   const [rating, setRating] = useState(5);
 
@@ -21,23 +21,23 @@ export default function EventDetailPage() {
   const eventId = Array.isArray(params.id) ? params.id[0] : params.id;
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (hasHydrated && !isAuthenticated && !token) {
       router.push('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [hasHydrated, isAuthenticated, token, router]);
 
   const { data, loading, error } = useQuery(EVENT, {
     variables: { id: eventId },
-    skip: !isAuthenticated || !eventId,
+    skip: !hasHydrated || !isAuthenticated || !eventId,
   });
 
   const { data: commentsData } = useQuery(COMMENTS, {
     variables: { eventId: eventId },
-    skip: !isAuthenticated || !eventId,
+    skip: !hasHydrated || !isAuthenticated || !eventId,
   });
 
   const { data: registrationsData } = useQuery(MY_REGISTRATIONS, {
-    skip: !isAuthenticated,
+    skip: !hasHydrated || !isAuthenticated,
   });
 
   const [createRegistration, { loading: registering }] = useMutation(CREATE_REGISTRATION, {
@@ -58,7 +58,7 @@ export default function EventDetailPage() {
   // Real-time subscriptions are handled via Apollo Client subscriptions
   // Comments will be refetched automatically when new ones are added
 
-  if (!isAuthenticated || !eventId) {
+  if (!hasHydrated || !isAuthenticated || !eventId) {
     return null;
   }
 

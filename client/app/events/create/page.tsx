@@ -34,7 +34,7 @@ export default function CreateEventPage() {
   const [createEvent, { loading, error }] = useMutation(CREATE_EVENT);
   const [updateEvent] = useMutation(UPDATE_EVENT);
   const router = useRouter();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, hasHydrated, token, user } = useAuthStore();
   const {
     register,
     handleSubmit,
@@ -44,10 +44,14 @@ export default function CreateEventPage() {
   });
 
   useEffect(() => {
-    if (!isAuthenticated || (user?.role !== 'ORGANIZER' && user?.role !== 'ADMIN')) {
-      router.push('/events');
+    if (hasHydrated) {
+      if (!isAuthenticated && !token) {
+        router.push('/login');
+      } else if (isAuthenticated && user?.role !== 'ORGANIZER' && user?.role !== 'ADMIN') {
+        router.push('/events');
+      }
     }
-  }, [isAuthenticated, user, router]);
+  }, [hasHydrated, isAuthenticated, token, user, router]);
 
   const onSubmit = async (data: EventFormData) => {
     try {
