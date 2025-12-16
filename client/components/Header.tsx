@@ -26,7 +26,7 @@ export function Header() {
                 href="/events"
                 className="text-gray-700 hover:text-primary-600 transition-colors font-medium relative group"
               >
-                Events
+                События
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all"></span>
               </Link>
               {user?.role === 'ORGANIZER' || user?.role === 'ADMIN' ? (
@@ -35,14 +35,14 @@ export function Header() {
                     href="/events/my-events"
                     className="text-gray-700 hover:text-primary-600 transition-colors font-medium relative group"
                   >
-                    Мои события
+                    Настройка
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all"></span>
                   </Link>
                   <Link
                     href="/events/create"
                     className="text-gray-700 hover:text-primary-600 transition-colors font-medium relative group"
                   >
-                    Create Event
+                    Создать событие
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all"></span>
                   </Link>
                 </>
@@ -51,7 +51,7 @@ export function Header() {
                 href="/profile"
                 className="text-gray-700 hover:text-primary-600 transition-colors font-medium relative group"
               >
-                Profile
+                Профиль
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all"></span>
               </Link>
               <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
@@ -63,7 +63,7 @@ export function Header() {
                   onClick={handleLogout}
                   className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all transform hover:scale-105 shadow-md hover:shadow-lg font-medium"
                 >
-                  Logout
+                  Выйти
                 </button>
               </div>
             </>
@@ -73,13 +73,13 @@ export function Header() {
                 href="/login"
                 className="px-5 py-2 text-primary-600 border-2 border-primary-600 rounded-lg hover:bg-primary-50 transition-all font-medium"
               >
-                Login
+                Логин
               </Link>
               <Link
                 href="/register"
                 className="px-5 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all transform hover:scale-105 shadow-md hover:shadow-lg font-medium"
               >
-                Register
+                Регистрация
               </Link>
             </>
           )}

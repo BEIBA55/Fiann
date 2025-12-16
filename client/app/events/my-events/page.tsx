@@ -18,8 +18,9 @@ export default function MyEventsPage() {
   });
 
   const [updateEvent, { loading: updating }] = useMutation(UPDATE_EVENT, {
+    refetchQueries: [{ query: MY_EVENTS }],
+    awaitRefetchQueries: true,
     onCompleted: () => {
-      refetch();
       alert('Статус события обновлен!');
     },
     onError: (error) => {
@@ -33,14 +34,18 @@ export default function MyEventsPage() {
     }
   }, [isAuthenticated, user, router]);
 
-  const handleStatusChange = (eventId: string, newStatus: string) => {
+  const handleStatusChange = async (eventId: string, newStatus: string) => {
     if (confirm(`Изменить статус события на "${newStatus}"?`)) {
-      updateEvent({
-        variables: {
-          id: eventId,
-          input: { status: newStatus },
-        },
-      });
+      try {
+        await updateEvent({
+          variables: {
+            id: eventId,
+            input: { status: newStatus },
+          },
+        });
+      } catch (error) {
+        console.error('Error updating event status:', error);
+      }
     }
   };
 

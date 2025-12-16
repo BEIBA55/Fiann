@@ -36,6 +36,7 @@ export const createEventInputSchema = z.object({
     'SPORTS',
     'OTHER',
   ]),
+  status: z.enum(['DRAFT', 'PUBLISHED', 'CANCELLED', 'COMPLETED']).optional(),
   imageUrl: z.string().url().optional(),
 });
 

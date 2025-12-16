@@ -179,6 +179,13 @@ export const eventResolvers = {
           (event as any).date = dateValue;
           delete (validatedInput as any).date;
         }
+        
+        // Explicitly handle status update
+        if (validatedInput.status !== undefined) {
+          event.status = validatedInput.status as 'DRAFT' | 'PUBLISHED' | 'CANCELLED' | 'COMPLETED';
+          delete (validatedInput as any).status;
+        }
+        
         Object.assign(event, validatedInput);
         await event.save();
         await event.populate('organizerId', 'name email avatar');
