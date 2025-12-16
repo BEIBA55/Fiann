@@ -63,3 +63,9 @@ export const updateCommentInputSchema = z.object({
   rating: z.number().int().min(1).max(5).optional(),
 });
 
+export const updateUserInputSchema = z.object({
+  name: z.string().min(2).max(50).optional(),
+  email: z.string().email().optional(),
+  role: z.enum(['USER', 'ORGANIZER', 'ADMIN']).optional(),
+});
+

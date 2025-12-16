@@ -1,9 +1,9 @@
 import { IUser } from '../../models/User';
 import { User } from '../../models/User';
 import { generateToken } from '../../utils/auth';
-import { requireAuth, Context } from '../../utils/context';
+import { requireAuth, requireRole, Context } from '../../utils/context';
 import { handleError, AppError, ErrorCode } from '../../utils/errors';
-import { registerInputSchema, loginInputSchema } from '../../utils/validation';
+import { registerInputSchema, loginInputSchema, updateUserInputSchema } from '../../utils/validation';
 
 export const authResolvers = {
   User: {
@@ -91,6 +91,66 @@ export const authResolvers = {
           token,
           user: userObj ? { ...userObj, id: userObj._id.toString() } : null,
         };
+      } catch (error) {
+        throw handleError(error);
+      }
+    },
+
+    updateUser: async (_: any, { id, input }: { id: string; input: any }, context: Context) => {
+      try {
+        requireAuth(context);
+        requireRole(context, ['ADMIN']);
+
+        const validatedInput = updateUserInputSchema.parse(input);
+        const user = await User.findById(id);
+        
+        if (!user || user.isDeleted) {
+          throw new AppError('User not found', ErrorCode.NOT_FOUND, 404);
+        }
+
+        // Prevent admin from changing their own role
+        if (id === context.userId && validatedInput.role && validatedInput.role !== user.role) {
+          throw new AppError('Cannot change your own role', ErrorCode.BAD_REQUEST, 400);
+        }
+
+        // Check if email is being changed and if it's already taken
+        if (validatedInput.email && validatedInput.email !== user.email) {
+          const existingUser = await User.findOne({ email: validatedInput.email });
+          if (existingUser) {
+            throw new AppError('Email already in use', ErrorCode.BAD_REQUEST, 400);
+          }
+        }
+
+        Object.assign(user, validatedInput);
+        await user.save();
+
+        const userObj = await User.findById(user._id).select('-password').lean();
+        return { ...userObj, id: userObj!._id.toString() };
+      } catch (error) {
+        throw handleError(error);
+      }
+    },
+
+    deleteUser: async (_: any, { id }: { id: string }, context: Context) => {
+      try {
+        requireAuth(context);
+        requireRole(context, ['ADMIN']);
+
+        // Prevent admin from deleting themselves
+        if (id === context.userId) {
+          throw new AppError('Cannot delete your own account', ErrorCode.BAD_REQUEST, 400);
+        }
+
+        const user = await User.findById(id);
+        if (!user || user.isDeleted) {
+          throw new AppError('User not found', ErrorCode.NOT_FOUND, 404);
+        }
+
+        // Soft delete
+        user.isDeleted = true;
+        await user.save();
+
+        return true;
       } catch (error) {
         throw handleError(error);
       }

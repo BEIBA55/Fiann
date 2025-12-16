@@ -144,6 +144,12 @@ export const typeDefs = gql`
     rating: Int
   }
 
+  input UpdateUserInput {
+    name: String
+    email: String
+    role: UserRole
+  }
+
   type Query {
     # User queries
     me: User
@@ -174,6 +180,8 @@ export const typeDefs = gql`
     # Auth mutations
     register(input: RegisterInput!): AuthPayload!
     login(input: LoginInput!): AuthPayload!
+    updateUser(id: ID!, input: UpdateUserInput!): User!
+    deleteUser(id: ID!): Boolean!
 
     # Event mutations
     createEvent(input: CreateEventInput!): Event!

@@ -129,3 +129,16 @@ export const COMMENTS = gql`
   }
 `;
 
+export const USERS = gql`
+  query Users {
+    users {
+      id
+      name
+      email
+      role
+      avatar
+      createdAt
+    }
+  }
+`;
+
