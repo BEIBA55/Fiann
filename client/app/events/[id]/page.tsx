@@ -73,7 +73,7 @@ export default function EventDetailPage() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <p className="text-lg text-gray-600 font-medium">Loading event...</p>
+              <p className="text-lg text-gray-600 font-medium">Загрузка события...</p>
             </div>
           </div>
         </main>
@@ -88,8 +88,8 @@ export default function EventDetailPage() {
         <main className="container mx-auto px-4 py-12">
           <div className="max-w-md mx-auto bg-red-50 border-2 border-red-200 rounded-2xl p-6 text-center">
             <div className="text-4xl mb-4">⚠️</div>
-            <h2 className="text-xl font-bold text-red-800 mb-2">Error Loading Event</h2>
-            <p className="text-red-600">{error?.message || 'Event not found'}</p>
+            <h2 className="text-xl font-bold text-red-800 mb-2">Ошибка загрузки события</h2>
+            <p className="text-red-600">{error?.message || 'Событие не найдено'}</p>
           </div>
         </main>
       </div>
@@ -113,6 +113,7 @@ export default function EventDetailPage() {
       await createRegistration({
         variables: { input: { eventId: eventId } },
       });
+      alert('Вы успешно зарегистрировались на событие!');
     } catch (err: any) {
       alert(err.message);
     }
@@ -120,12 +121,13 @@ export default function EventDetailPage() {
 
   const handleCancelRegistration = async () => {
     if (!userRegistration) return;
-    if (!confirm('Are you sure you want to cancel your registration?')) return;
+    if (!confirm('Вы уверены, что хотите отменить регистрацию?')) return;
     
     try {
       await cancelRegistration({
         variables: { id: userRegistration.id },
       });
+      alert('Регистрация успешно отменена!');
     } catch (err: any) {
       alert(err.message);
     }
@@ -144,6 +146,7 @@ export default function EventDetailPage() {
         },
       });
       setCommentText('');
+      alert('Комментарий успешно добавлен!');
     } catch (err: any) {
       alert(err.message);
     }
@@ -175,7 +178,7 @@ export default function EventDetailPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Date & Time</p>
+                  <p className="text-sm text-gray-500 mb-1">Дата и время</p>
                   <p className="font-semibold text-gray-900">{format(new Date(event.date), 'PPP p')}</p>
                 </div>
               </div>
@@ -185,7 +188,7 @@ export default function EventDetailPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Location</p>
+                  <p className="text-sm text-gray-500 mb-1">Место</p>
                   <p className="font-semibold text-gray-900">{event.location}</p>
                 </div>
               </div>
@@ -194,7 +197,7 @@ export default function EventDetailPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                 </svg>
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Category</p>
+                  <p className="text-sm text-gray-500 mb-1">Категория</p>
                   <p className="font-semibold text-gray-900 capitalize">{event.category.toLowerCase()}</p>
                 </div>
               </div>
@@ -203,9 +206,9 @@ export default function EventDetailPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Capacity</p>
+                  <p className="text-sm text-gray-500 mb-1">Вместимость</p>
                   <p className="font-semibold text-gray-900">
-                    {event.registrationsCount} / {event.capacity} registered
+                    {event.registrationsCount} / {event.capacity} зарегистрировано
                   </p>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                     <div
@@ -227,8 +230,8 @@ export default function EventDetailPage() {
                 {userRegistration ? (
                   <>
                     <div className="flex-1 px-4 py-3 bg-green-50 border-2 border-green-200 rounded-lg">
-                      <p className="text-green-800 font-semibold mb-1">You are registered</p>
-                      <p className="text-sm text-green-600">Status: {userRegistration.status}</p>
+                      <p className="text-green-800 font-semibold mb-1">Вы зарегистрированы</p>
+                      <p className="text-sm text-green-600">Статус: {userRegistration.status}</p>
                     </div>
                     {userRegistration.status !== 'CANCELLED' && (
                       <button
@@ -236,7 +239,7 @@ export default function EventDetailPage() {
                         disabled={canceling}
                         className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 transition-all transform hover:scale-105 font-semibold"
                       >
-                        {canceling ? 'Canceling...' : 'Cancel Registration'}
+                        {canceling ? 'Отмена...' : 'Отменить регистрацию'}
                       </button>
                     )}
                   </>
@@ -246,7 +249,7 @@ export default function EventDetailPage() {
                     disabled={registering}
                     className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg hover:from-primary-700 hover:to-primary-800 disabled:opacity-50 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl font-semibold"
                   >
-                    {registering ? 'Registering...' : 'Register for Event'}
+                    {registering ? 'Регистрация...' : 'Зарегистрироваться на событие'}
                   </button>
                 )}
               </div>
@@ -254,10 +257,10 @@ export default function EventDetailPage() {
           </div>
 
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 mb-6 border border-gray-100">
-            <h2 className="text-3xl font-bold mb-6">Comments</h2>
+            <h2 className="text-3xl font-bold mb-6">Комментарии</h2>
             <div className="space-y-6 mb-8">
               {comments.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">No comments yet. Be the first to comment!</p>
+                <p className="text-center text-gray-500 py-8">Пока нет комментариев. Будьте первым!</p>
               ) : (
                 comments.map((comment: any) => (
                   <div key={comment.id} className="border-2 border-gray-100 rounded-xl p-6 hover:shadow-md transition-all">
@@ -296,13 +299,13 @@ export default function EventDetailPage() {
               <textarea
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
-                placeholder="Share your thoughts about this event..."
+                placeholder="Поделитесь своими мыслями об этом событии..."
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                 rows={4}
               />
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-gray-700">Rating:</span>
+                  <span className="text-sm font-semibold text-gray-700">Оценка:</span>
                   <select
                     value={rating}
                     onChange={(e) => setRating(Number(e.target.value))}
@@ -310,7 +313,7 @@ export default function EventDetailPage() {
                   >
                     {[1, 2, 3, 4, 5].map((r) => (
                       <option key={r} value={r}>
-                        {r} star{r !== 1 ? 's' : ''}
+                        {r} {r === 1 ? 'звезда' : r < 5 ? 'звезды' : 'звезд'}
                       </option>
                     ))}
                   </select>
@@ -319,7 +322,7 @@ export default function EventDetailPage() {
                   onClick={handleComment}
                   className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-xl hover:from-primary-700 hover:to-primary-800 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl font-semibold"
                 >
-                  Post Comment
+                  Опубликовать комментарий
                 </button>
               </div>
             </div>

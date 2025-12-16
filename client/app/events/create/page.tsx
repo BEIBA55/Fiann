@@ -11,10 +11,10 @@ import { useAuthStore } from '@/store/auth-store';
 import { useEffect } from 'react';
 
 const eventSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
-  date: z.string().min(1, 'Date is required'),
-  location: z.string().min(3, 'Location must be at least 3 characters'),
+  title: z.string().min(3, 'Название должно содержать минимум 3 символа'),
+  description: z.string().min(10, 'Описание должно содержать минимум 10 символов'),
+  date: z.string().min(1, 'Дата обязательна'),
+  location: z.string().min(3, 'Место должно содержать минимум 3 символа'),
   capacity: z.number().min(1).max(10000),
   category: z.enum([
     'CONFERENCE',
@@ -91,7 +91,7 @@ export default function CreateEventPage() {
       router.push(`/events/${result.data.createEvent.id}`);
     } catch (err: any) {
       console.error('Create event error:', err);
-      alert(err.message || 'Failed to create event');
+      alert(err.message || 'Не удалось создать событие');
     }
   };
 
@@ -100,11 +100,11 @@ export default function CreateEventPage() {
       <Header />
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8">
-          <h1 className="text-3xl font-bold mb-6">Create Event</h1>
+          <h1 className="text-3xl font-bold mb-6">Создать событие</h1>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                Title
+                Название
               </label>
               <input
                 {...register('title')}
@@ -118,7 +118,7 @@ export default function CreateEventPage() {
             </div>
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                Description
+                Описание
               </label>
               <textarea
                 {...register('description')}
@@ -132,7 +132,7 @@ export default function CreateEventPage() {
             </div>
             <div>
               <label htmlFor="date" className="block text-sm font-medium text-gray-700">
-                Date & Time
+                Дата и время
               </label>
               <input
                 {...register('date')}
@@ -146,7 +146,7 @@ export default function CreateEventPage() {
             </div>
             <div>
               <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-                Location
+                Место
               </label>
               <input
                 {...register('location')}
@@ -160,7 +160,7 @@ export default function CreateEventPage() {
             </div>
             <div>
               <label htmlFor="capacity" className="block text-sm font-medium text-gray-700">
-                Capacity
+                Вместимость
               </label>
               <input
                 {...register('capacity', { valueAsNumber: true })}
@@ -176,20 +176,20 @@ export default function CreateEventPage() {
             </div>
             <div>
               <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-                Category
+                Категория
               </label>
               <select
                 {...register('category')}
                 id="category"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
               >
-                <option value="CONFERENCE">Conference</option>
-                <option value="WORKSHOP">Workshop</option>
-                <option value="SEMINAR">Seminar</option>
-                <option value="NETWORKING">Networking</option>
-                <option value="CONCERT">Concert</option>
-                <option value="SPORTS">Sports</option>
-                <option value="OTHER">Other</option>
+                <option value="CONFERENCE">Конференция</option>
+                <option value="WORKSHOP">Мастер-класс</option>
+                <option value="SEMINAR">Семинар</option>
+                <option value="NETWORKING">Нетворкинг</option>
+                <option value="CONCERT">Концерт</option>
+                <option value="SPORTS">Спорт</option>
+                <option value="OTHER">Другое</option>
               </select>
               {errors.category && (
                 <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>
@@ -216,7 +216,7 @@ export default function CreateEventPage() {
               disabled={loading}
               className="w-full px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
             >
-              {loading ? 'Creating...' : 'Create Event'}
+              {loading ? 'Создание...' : 'Создать событие'}
             </button>
           </form>
         </div>

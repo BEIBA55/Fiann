@@ -7,8 +7,8 @@ import { AuthProvider } from '@/components/AuthProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Event Management System',
-  description: 'Manage and discover events',
+  title: 'Система управления событиями',
+  description: 'Управляйте и открывайте события',
 };
 
 export default function RootLayout({
@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="ru">
       <body className={inter.className}>
         <ApolloWrapper>
           <AuthProvider>{children}</AuthProvider>

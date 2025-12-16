@@ -72,7 +72,7 @@ export function EventCard({
           
           <div className="pt-2 border-t border-gray-100">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-gray-700">Registrations</span>
+              <span className="text-sm font-semibold text-gray-700">Регистрации</span>
               <span className="text-sm font-bold text-primary-600">
                 {registrationsCount} / {capacity}
               </span>

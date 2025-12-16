@@ -9,14 +9,14 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 const categories = [
-  { value: '', label: 'All Categories' },
-  { value: 'CONFERENCE', label: 'Conference' },
-  { value: 'WORKSHOP', label: 'Workshop' },
-  { value: 'SEMINAR', label: 'Seminar' },
-  { value: 'NETWORKING', label: 'Networking' },
-  { value: 'CONCERT', label: 'Concert' },
-  { value: 'SPORTS', label: 'Sports' },
-  { value: 'OTHER', label: 'Other' },
+  { value: '', label: 'Все категории' },
+  { value: 'CONFERENCE', label: 'Конференция' },
+  { value: 'WORKSHOP', label: 'Мастер-класс' },
+  { value: 'SEMINAR', label: 'Семинар' },
+  { value: 'NETWORKING', label: 'Нетворкинг' },
+  { value: 'CONCERT', label: 'Концерт' },
+  { value: 'SPORTS', label: 'Спорт' },
+  { value: 'OTHER', label: 'Другое' },
 ];
 
 export default function EventsPage() {
@@ -50,7 +50,7 @@ export default function EventsPage() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <p className="text-lg text-gray-600 font-medium">Loading events...</p>
+              <p className="text-lg text-gray-600 font-medium">Загрузка событий...</p>
             </div>
           </div>
         </main>
@@ -65,7 +65,7 @@ export default function EventsPage() {
         <main className="container mx-auto px-4 py-12">
           <div className="max-w-md mx-auto bg-red-50 border-2 border-red-200 rounded-2xl p-6 text-center">
             <div className="text-4xl mb-4">⚠️</div>
-            <h2 className="text-xl font-bold text-red-800 mb-2">Error Loading Events</h2>
+            <h2 className="text-xl font-bold text-red-800 mb-2">Ошибка загрузки событий</h2>
             <p className="text-red-600">{error.message}</p>
           </div>
         </main>
@@ -78,8 +78,8 @@ export default function EventsPage() {
       <Header />
       <main className="container mx-auto px-4 py-12">
         <div className="mb-8">
-          <h1 className="text-5xl font-extrabold text-gray-900 mb-3">Discover Events</h1>
-          <p className="text-xl text-gray-600 mb-6">Find amazing events happening near you</p>
+          <h1 className="text-5xl font-extrabold text-gray-900 mb-3">Открыть события</h1>
+          <p className="text-xl text-gray-600 mb-6">Найдите удивительные события рядом с вами</p>
           
           {/* Category Filter */}
           <div className="flex flex-wrap gap-3 mb-6">
@@ -100,7 +100,7 @@ export default function EventsPage() {
           
           {selectedCategory && (
             <div className="mb-4 flex items-center gap-2">
-              <span className="text-sm text-gray-600">Filtered by:</span>
+              <span className="text-sm text-gray-600">Фильтр:</span>
               <span className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-semibold">
                 {categories.find(c => c.value === selectedCategory)?.label}
               </span>
@@ -108,7 +108,7 @@ export default function EventsPage() {
                 onClick={() => setSelectedCategory('')}
                 className="text-sm text-gray-500 hover:text-gray-700 underline"
               >
-                Clear filter
+                Очистить фильтр
               </button>
             </div>
           )}
@@ -118,26 +118,26 @@ export default function EventsPage() {
           <div className="text-center py-16">
             <div className="text-6xl mb-4">📅</div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              {selectedCategory ? 'No events in this category' : 'No events available'}
+              {selectedCategory ? 'Нет событий в этой категории' : 'События недоступны'}
             </h2>
             <p className="text-gray-600">
               {selectedCategory 
-                ? 'Try selecting a different category or check back later!' 
-                : 'Check back later for new events!'}
+                ? 'Попробуйте выбрать другую категорию или зайдите позже!' 
+                : 'Зайдите позже для новых событий!'}
             </p>
             {selectedCategory && (
               <button
                 onClick={() => setSelectedCategory('')}
                 className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
               >
-                Show All Events
+                Показать все события
               </button>
             )}
           </div>
         ) : (
           <>
             <div className="mb-4 text-sm text-gray-600">
-              Showing {data?.events?.length || 0} event{data?.events?.length !== 1 ? 's' : ''}
+              Показано {data?.events?.length || 0} {data?.events?.length === 1 ? 'событие' : data?.events?.length && data.events.length < 5 ? 'события' : 'событий'}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {data?.events?.map((event: any) => (

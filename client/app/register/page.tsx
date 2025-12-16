@@ -11,9 +11,9 @@ import { useAuthStore } from '@/store/auth-store';
 import { Header } from '@/components/Header';
 
 const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  name: z.string().min(2, 'Имя должно содержать минимум 2 символа'),
+  email: z.string().email('Неверный адрес электронной почты'),
+  password: z.string().min(6, 'Пароль должен содержать минимум 6 символов'),
   role: z.enum(['USER', 'ORGANIZER']).optional(),
 });
 
@@ -48,13 +48,13 @@ export default function RegisterPage() {
       <main className="container mx-auto px-4 py-12 flex items-center justify-center min-h-[calc(100vh-80px)]">
         <div className="max-w-md w-full bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-gray-100">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Create Account</h1>
-            <p className="text-gray-600">Join EventHub and start exploring</p>
+            <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Создать аккаунт</h1>
+            <p className="text-gray-600">Присоединяйтесь к EventHub и начните исследовать</p>
           </div>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div>
               <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
-                Full Name
+                Полное имя
               </label>
               <input
                 {...registerField('name')}
@@ -72,7 +72,7 @@ export default function RegisterPage() {
             </div>
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                Email Address
+                Адрес электронной почты
               </label>
               <input
                 {...registerField('email')}
@@ -90,7 +90,7 @@ export default function RegisterPage() {
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                Password
+                Пароль
               </label>
               <input
                 {...registerField('password')}
@@ -123,17 +123,17 @@ export default function RegisterPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Creating account...
+                  Создание аккаунта...
                 </span>
               ) : (
-                'Create Account'
+                'Создать аккаунт'
               )}
             </button>
           </form>
           <p className="mt-6 text-center text-sm text-gray-600">
-            Already have an account?{' '}
+            Уже есть аккаунт?{' '}
             <a href="/login" className="text-primary-600 hover:text-primary-700 font-semibold hover:underline transition">
-              Sign in here
+              Войдите здесь
             </a>
           </p>
         </div>
