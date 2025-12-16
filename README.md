@@ -330,30 +330,11 @@ Final/
 
 ISC
 
-## 👥 Team & Contributions
+## 👥 Team
 
 **Contributors:**
-
-**Member 1:**
-- Backend architecture (Express.js, GraphQL setup)
-- GraphQL schema design and resolvers (Queries, Mutations, Subscriptions)
-- MongoDB models and validations (User, Event, Registration, Comment)
-- JWT authentication and authorization
-- Error handling and validation (Zod schemas)
-- Jest unit tests (auth, event, registration resolvers)
-- Integration tests (event flow)
-- Docker configuration for server
-- Seeding script
-
-**Member 2:**
-- Frontend architecture (Next.js App Router)
-- UI components and pages (7 screens)
-- Apollo Client setup with WebSocket subscriptions
-- Zustand state management (auth store)
-- Form validation (React Hook Form + Zod)
-- TailwindCSS styling and responsive design
-- Docker configuration for client
-- README documentation
+- [Your Name] - Backend, GraphQL, Testing
+- [Partner Name] - Frontend, UI/UX, Subscriptions
 
 ## 🔗 Production Demo
 
