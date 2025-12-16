@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation } from '@apollo/client';
 import { useParams, useRouter } from 'next/navigation';
-import { EVENT, COMMENTS } from '@/lib/graphql/queries';
+import { EVENT, COMMENTS, MY_REGISTRATIONS } from '@/lib/graphql/queries';
 import { CREATE_REGISTRATION, CREATE_COMMENT, CANCEL_REGISTRATION } from '@/lib/graphql/mutations';
 import { COMMENT_ADDED, REGISTRATION_CREATED } from '@/lib/graphql/subscriptions';
 import { Header } from '@/components/Header';
@@ -36,12 +36,19 @@ export default function EventDetailPage() {
     skip: !isAuthenticated || !eventId,
   });
 
+  const { data: registrationsData } = useQuery(MY_REGISTRATIONS, {
+    skip: !isAuthenticated,
+  });
+
   const [createRegistration, { loading: registering }] = useMutation(CREATE_REGISTRATION, {
     refetchQueries: [{ query: EVENT, variables: { id: eventId } }],
   });
 
-  const [cancelRegistration] = useMutation(CANCEL_REGISTRATION, {
-    refetchQueries: [{ query: EVENT, variables: { id: eventId } }],
+  const [cancelRegistration, { loading: canceling }] = useMutation(CANCEL_REGISTRATION, {
+    refetchQueries: [
+      { query: EVENT, variables: { id: eventId } },
+      { query: MY_REGISTRATIONS },
+    ],
   });
 
   const [createComment] = useMutation(CREATE_COMMENT, {
@@ -57,19 +64,33 @@ export default function EventDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <Header />
-        <main className="container mx-auto px-4 py-12">Loading...</main>
+        <main className="container mx-auto px-4 py-12">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center">
+              <svg className="animate-spin h-12 w-12 text-primary-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <p className="text-lg text-gray-600 font-medium">Loading event...</p>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
 
   if (error || !data?.event) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <Header />
         <main className="container mx-auto px-4 py-12">
-          <div className="text-red-600">Error loading event</div>
+          <div className="max-w-md mx-auto bg-red-50 border-2 border-red-200 rounded-2xl p-6 text-center">
+            <div className="text-4xl mb-4">⚠️</div>
+            <h2 className="text-xl font-bold text-red-800 mb-2">Error Loading Event</h2>
+            <p className="text-red-600">{error?.message || 'Event not found'}</p>
+          </div>
         </main>
       </div>
     );
@@ -77,11 +98,33 @@ export default function EventDetailPage() {
 
   const event = data.event;
   const comments = commentsData?.comments || [];
+  const registrations = registrationsData?.myRegistrations || [];
+  
+  // Find user's registration for this event
+  const userRegistration = registrations.find(
+    (reg: any) => {
+      const regEventId = typeof reg.eventId === 'string' ? reg.eventId : reg.event?.id;
+      return regEventId === eventId;
+    }
+  );
 
   const handleRegister = async () => {
     try {
       await createRegistration({
         variables: { input: { eventId: eventId } },
+      });
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleCancelRegistration = async () => {
+    if (!userRegistration) return;
+    if (!confirm('Are you sure you want to cancel your registration?')) return;
+    
+    try {
+      await cancelRegistration({
+        variables: { id: userRegistration.id },
       });
     } catch (err: any) {
       alert(err.message);
@@ -107,99 +150,174 @@ export default function EventDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-md p-8 mb-6">
-            <h1 className="text-4xl font-bold mb-4">{event.title}</h1>
-            <p className="text-gray-600 mb-6">{event.description}</p>
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div>
-                <span className="font-semibold">Date:</span>{' '}
-                {format(new Date(event.date), 'PPP p')}
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 mb-6 border border-gray-100">
+            <div className="mb-6">
+              <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-4 ${
+                event.status === 'PUBLISHED'
+                  ? 'bg-green-100 text-green-700 border border-green-200'
+                  : event.status === 'DRAFT'
+                  ? 'bg-gray-100 text-gray-700 border border-gray-200'
+                  : 'bg-red-100 text-red-700 border border-red-200'
+              }`}>
+                {event.status}
+              </span>
+              <h1 className="text-5xl font-extrabold text-gray-900 mb-4">{event.title}</h1>
+              <p className="text-xl text-gray-600 leading-relaxed">{event.description}</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-6 bg-gray-50 rounded-xl">
+              <div className="flex items-start">
+                <svg className="w-6 h-6 text-gray-500 mr-3 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Date & Time</p>
+                  <p className="font-semibold text-gray-900">{format(new Date(event.date), 'PPP p')}</p>
+                </div>
               </div>
-              <div>
-                <span className="font-semibold">Location:</span> {event.location}
+              <div className="flex items-start">
+                <svg className="w-6 h-6 text-gray-500 mr-3 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Location</p>
+                  <p className="font-semibold text-gray-900">{event.location}</p>
+                </div>
               </div>
-              <div>
-                <span className="font-semibold">Category:</span> {event.category}
+              <div className="flex items-start">
+                <svg className="w-6 h-6 text-gray-500 mr-3 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Category</p>
+                  <p className="font-semibold text-gray-900 capitalize">{event.category.toLowerCase()}</p>
+                </div>
               </div>
-              <div>
-                <span className="font-semibold">Capacity:</span>{' '}
-                {event.registrationsCount} / {event.capacity}
+              <div className="flex items-start">
+                <svg className="w-6 h-6 text-gray-500 mr-3 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Capacity</p>
+                  <p className="font-semibold text-gray-900">
+                    {event.registrationsCount} / {event.capacity} registered
+                  </p>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                    <div
+                      className={`h-2 rounded-full transition-all ${
+                        (event.registrationsCount / event.capacity) >= 0.9
+                          ? 'bg-red-500'
+                          : (event.registrationsCount / event.capacity) >= 0.7
+                          ? 'bg-yellow-500'
+                          : 'bg-green-500'
+                      }`}
+                      style={{ width: `${Math.min((event.registrationsCount / event.capacity) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
               </div>
             </div>
             {event.status === 'PUBLISHED' && (
-              <button
-                onClick={handleRegister}
-                disabled={registering}
-                className="px-6 py-3 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
-              >
-                {registering ? 'Registering...' : 'Register for Event'}
-              </button>
+              <div className="flex gap-4">
+                {userRegistration ? (
+                  <>
+                    <div className="flex-1 px-4 py-3 bg-green-50 border-2 border-green-200 rounded-lg">
+                      <p className="text-green-800 font-semibold mb-1">You are registered</p>
+                      <p className="text-sm text-green-600">Status: {userRegistration.status}</p>
+                    </div>
+                    {userRegistration.status !== 'CANCELLED' && (
+                      <button
+                        onClick={handleCancelRegistration}
+                        disabled={canceling}
+                        className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 transition-all transform hover:scale-105 font-semibold"
+                      >
+                        {canceling ? 'Canceling...' : 'Cancel Registration'}
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <button
+                    onClick={handleRegister}
+                    disabled={registering}
+                    className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg hover:from-primary-700 hover:to-primary-800 disabled:opacity-50 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl font-semibold"
+                  >
+                    {registering ? 'Registering...' : 'Register for Event'}
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-8 mb-6">
-            <h2 className="text-2xl font-bold mb-4">Comments</h2>
-            <div className="space-y-4 mb-6">
-              {comments.map((comment: any) => (
-                <div key={comment.id} className="border-b pb-4">
-                  <div className="flex justify-between mb-2">
-                    <span className="font-semibold">{comment.user.name}</span>
-                    {comment.rating && (
-                      <div className="flex items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <svg
-                            key={star}
-                            className={`w-5 h-5 ${
-                              star <= comment.rating
-                                ? 'text-gray-700 fill-current'
-                                : 'text-gray-300'
-                            }`}
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        ))}
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 mb-6 border border-gray-100">
+            <h2 className="text-3xl font-bold mb-6">Comments</h2>
+            <div className="space-y-6 mb-8">
+              {comments.length === 0 ? (
+                <p className="text-center text-gray-500 py-8">No comments yet. Be the first to comment!</p>
+              ) : (
+                comments.map((comment: any) => (
+                  <div key={comment.id} className="border-2 border-gray-100 rounded-xl p-6 hover:shadow-md transition-all">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <span className="font-bold text-gray-900">{comment.user.name}</span>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {format(new Date(comment.createdAt), 'PPP')}
+                        </p>
                       </div>
-                    )}
+                      {comment.rating && (
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <svg
+                              key={star}
+                              className={`w-5 h-5 ${
+                                star <= comment.rating
+                                  ? 'text-gray-700 fill-current'
+                                  : 'text-gray-300'
+                              }`}
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-gray-700 leading-relaxed">{comment.content}</p>
                   </div>
-                  <p className="text-gray-700">{comment.content}</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    {format(new Date(comment.createdAt), 'PPP')}
-                  </p>
-                </div>
-              ))}
+                ))
+              )}
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 pt-6 border-t border-gray-200">
               <textarea
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
-                placeholder="Add a comment..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-md"
-                rows={3}
+                placeholder="Share your thoughts about this event..."
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                rows={4}
               />
-              <div className="flex items-center gap-4">
-                <label>
-                  Rating:
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-gray-700">Rating:</span>
                   <select
                     value={rating}
                     onChange={(e) => setRating(Number(e.target.value))}
-                    className="ml-2 px-2 py-1 border rounded"
+                    className="px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   >
                     {[1, 2, 3, 4, 5].map((r) => (
                       <option key={r} value={r}>
-                        {r}
+                        {r} star{r !== 1 ? 's' : ''}
                       </option>
                     ))}
                   </select>
                 </label>
                 <button
                   onClick={handleComment}
-                  className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700"
+                  className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-xl hover:from-primary-700 hover:to-primary-800 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl font-semibold"
                 >
                   Post Comment
                 </button>
