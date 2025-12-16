@@ -49,17 +49,32 @@ export default function CreateEventPage() {
 
   const onSubmit = async (data: EventFormData) => {
     try {
+      // Convert datetime-local format (YYYY-MM-DDTHH:mm) to ISO string
+      // datetime-local returns local time without timezone, so we need to convert it properly
+      const dateValue = data.date;
+      let isoDate: string;
+      
+      if (dateValue && dateValue.includes('T')) {
+        // Create Date object from local datetime string
+        const localDate = new Date(dateValue);
+        // Convert to ISO string
+        isoDate = localDate.toISOString();
+      } else {
+        isoDate = dateValue;
+      }
+      
       const result = await createEvent({
         variables: {
           input: {
             ...data,
-            date: new Date(data.date).toISOString(),
+            date: isoDate,
           },
         },
       });
       router.push(`/events/${result.data.createEvent.id}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Create event error:', err);
+      alert(err.message || 'Failed to create event');
     }
   };
 
