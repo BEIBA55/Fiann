@@ -113,7 +113,14 @@ export const eventResolvers = {
     createEvent: async (_: any, { input }: { input: any }, context: Context) => {
       try {
         requireAuth(context);
-        const validatedInput = createEventInputSchema.parse(input);
+        
+        // Convert Date object to ISO string if it's a Date object (GraphQL DateTime scalar converts strings to Date)
+        const inputForValidation = {
+          ...input,
+          date: input.date instanceof Date ? input.date.toISOString() : input.date,
+        };
+        
+        const validatedInput = createEventInputSchema.parse(inputForValidation);
 
         const event = new Event({
           ...validatedInput,
@@ -143,7 +150,16 @@ export const eventResolvers = {
     ) => {
       try {
         requireAuth(context);
-        const validatedInput = updateEventInputSchema.parse(input);
+        
+        // Convert Date object to ISO string if it's a Date object (GraphQL DateTime scalar converts strings to Date)
+        const inputForValidation = {
+          ...input,
+          ...(input.date && {
+            date: input.date instanceof Date ? input.date.toISOString() : input.date,
+          }),
+        };
+        
+        const validatedInput = updateEventInputSchema.parse(inputForValidation);
 
         const event = await Event.findById(id);
         if (!event || event.isDeleted) {

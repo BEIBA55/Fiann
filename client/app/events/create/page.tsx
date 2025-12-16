@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CREATE_EVENT } from '@/lib/graphql/mutations';
+import { CREATE_EVENT, UPDATE_EVENT } from '@/lib/graphql/mutations';
 import { Header } from '@/components/Header';
 import { useAuthStore } from '@/store/auth-store';
 import { useEffect } from 'react';
@@ -25,12 +25,14 @@ const eventSchema = z.object({
     'SPORTS',
     'OTHER',
   ]),
+  publishImmediately: z.boolean().optional(),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
 
 export default function CreateEventPage() {
   const [createEvent, { loading, error }] = useMutation(CREATE_EVENT);
+  const [updateEvent] = useMutation(UPDATE_EVENT);
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
   const {
@@ -71,6 +73,17 @@ export default function CreateEventPage() {
           },
         },
       });
+
+      // If user wants to publish immediately, update the status
+      if (data.publishImmediately) {
+        await updateEvent({
+          variables: {
+            id: result.data.createEvent.id,
+            input: { status: 'PUBLISHED' },
+          },
+        });
+      }
+
       router.push(`/events/${result.data.createEvent.id}`);
     } catch (err: any) {
       console.error('Create event error:', err);
@@ -178,6 +191,17 @@ export default function CreateEventPage() {
                 <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>
               )}
             </div>
+            <div className="flex items-center">
+              <input
+                {...register('publishImmediately')}
+                type="checkbox"
+                id="publishImmediately"
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+              />
+              <label htmlFor="publishImmediately" className="ml-2 block text-sm text-gray-700">
+                Опубликовать сразу
+              </label>
+            </div>
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
                 {error.message}
@@ -196,4 +220,5 @@ export default function CreateEventPage() {
     </div>
   );
 }
+
 

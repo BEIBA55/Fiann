@@ -15,9 +15,12 @@ export const loginInputSchema = z.object({
 export const createEventInputSchema = z.object({
   title: z.string().min(3).max(100),
   description: z.string().min(10).max(2000),
-  date: z.string().refine(
+  date: z.union([
+    z.string(),
+    z.date(),
+  ]).refine(
     (val) => {
-      const date = new Date(val);
+      const date = val instanceof Date ? val : new Date(val);
       return !isNaN(date.getTime());
     },
     { message: 'Invalid date format' }

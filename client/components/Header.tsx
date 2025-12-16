@@ -30,13 +30,22 @@ export function Header() {
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all"></span>
               </Link>
               {user?.role === 'ORGANIZER' || user?.role === 'ADMIN' ? (
-                <Link
-                  href="/events/create"
-                  className="text-gray-700 hover:text-primary-600 transition-colors font-medium relative group"
-                >
-                  Create Event
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all"></span>
-                </Link>
+                <>
+                  <Link
+                    href="/events/my-events"
+                    className="text-gray-700 hover:text-primary-600 transition-colors font-medium relative group"
+                  >
+                    Мои события
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all"></span>
+                  </Link>
+                  <Link
+                    href="/events/create"
+                    className="text-gray-700 hover:text-primary-600 transition-colors font-medium relative group"
+                  >
+                    Create Event
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all"></span>
+                  </Link>
+                </>
               ) : null}
               <Link
                 href="/profile"
