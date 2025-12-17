@@ -13,9 +13,16 @@ import { useEffect } from 'react';
 const eventSchema = z.object({
   title: z.string().min(3, 'Название должно содержать минимум 3 символа'),
   description: z.string().min(10, 'Описание должно содержать минимум 10 символов'),
-  date: z.string().min(1, 'Дата обязательна'),
+  date: z.string().min(1, 'Дата обязательна').refine(
+    (val) => {
+      if (!val) return false;
+      const date = new Date(val);
+      return !isNaN(date.getTime()) && date > new Date();
+    },
+    { message: 'Дата должна быть в будущем' }
+  ),
   location: z.string().min(3, 'Место должно содержать минимум 3 символа'),
-  capacity: z.number().min(1).max(10000),
+  capacity: z.number().min(1, 'Вместимость должна быть минимум 1').max(10000, 'Вместимость не может превышать 10000'),
   category: z.enum([
     'CONFERENCE',
     'WORKSHOP',
@@ -24,7 +31,7 @@ const eventSchema = z.object({
     'CONCERT',
     'SPORTS',
     'OTHER',
-  ]),
+  ], { errorMap: () => ({ message: 'Выберите категорию' }) }),
   publishImmediately: z.boolean().optional(),
 });
 
@@ -63,22 +70,31 @@ export default function CreateEventPage() {
       if (dateValue && dateValue.includes('T')) {
         // Create Date object from local datetime string
         const localDate = new Date(dateValue);
+        
+        // Проверка, что дата в будущем
+        if (localDate <= new Date()) {
+          alert('Дата события должна быть в будущем!');
+          return;
+        }
+        
         // Convert to ISO string
         isoDate = localDate.toISOString();
       } else {
         isoDate = dateValue;
       }
       
+      // Исключаем publishImmediately из данных для createEvent
+      const { publishImmediately, ...eventInput } = data;
+      
       const result = await createEvent({
         variables: {
           input: {
-            ...data,
+            ...eventInput,
             date: isoDate,
           },
         },
       });
 
-      // If user wants to publish immediately, update the status
       if (data.publishImmediately) {
         await updateEvent({
           variables: {
@@ -91,7 +107,34 @@ export default function CreateEventPage() {
       router.push(`/events/${result.data.createEvent.id}`);
     } catch (err: any) {
       console.error('Create event error:', err);
-      alert(err.message || 'Не удалось создать событие');
+      
+      // Улучшенная обработка ошибок
+      let errorMessage = 'Не удалось создать событие';
+      
+      if (err.graphQLErrors && err.graphQLErrors.length > 0) {
+        // GraphQL ошибки
+        const graphQLError = err.graphQLErrors[0];
+        errorMessage = graphQLError.message || errorMessage;
+        
+        // Если ошибка валидации, показываем детали
+        if (graphQLError.extensions?.code === 'VALIDATION_ERROR') {
+          try {
+            const validationErrors = JSON.parse(graphQLError.message);
+            if (Array.isArray(validationErrors)) {
+              const errorDetails = validationErrors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join('\n');
+              errorMessage = `Ошибка валидации:\n${errorDetails}`;
+            }
+          } catch {
+            // Если не удалось распарсить, используем обычное сообщение
+          }
+        }
+      } else if (err.networkError) {
+        errorMessage = 'Ошибка сети. Проверьте подключение к интернету.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      alert(errorMessage);
     }
   };
 
@@ -207,8 +250,11 @@ export default function CreateEventPage() {
               </label>
             </div>
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                {error.message}
+              <div className="bg-red-50 border-2 border-red-300 text-red-700 px-4 py-3 rounded-lg">
+                <div className="font-semibold mb-1">Ошибка создания события:</div>
+                <div className="text-sm">
+                  {String(error.graphQLErrors?.[0]?.message || error.message || 'Неизвестная ошибка')}
+                </div>
               </div>
             )}
             <button

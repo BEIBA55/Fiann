@@ -55,8 +55,6 @@ export default function EventDetailPage() {
     refetchQueries: [{ query: COMMENTS, variables: { eventId: eventId } }],
   });
 
-  // Real-time subscriptions are handled via Apollo Client subscriptions
-  // Comments will be refetched automatically when new ones are added
 
   if (!hasHydrated || !isAuthenticated || !eventId) {
     return null;

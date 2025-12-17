@@ -14,6 +14,7 @@ dotenv.config();
 
 const PORT = process.env.PORT || 4000;
 const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:3000';
+const NODE_ENV = process.env.NODE_ENV || 'development';
 
 async function startServer() {
   // Connect to MongoDB
@@ -22,10 +23,27 @@ async function startServer() {
   // Create Express app
   const app = express();
 
-  // CORS configuration
+  // CORS configuration - allow Apollo Studio in development
+  const allowedOrigins = NODE_ENV === 'development' 
+    ? [
+        ...CORS_ORIGIN.split(','),
+        'https://studio.apollographql.com',
+        'https://studio.apollographql.com/sandbox',
+      ]
+    : CORS_ORIGIN.split(',');
+
   app.use(
     cors({
-      origin: CORS_ORIGIN.split(','),
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, curl, Postman, Apollo Sandbox)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.includes(origin) || NODE_ENV === 'development') {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
       credentials: true,
     })
   );
@@ -39,6 +57,7 @@ async function startServer() {
   const apolloServer = new ApolloServer({
     schema,
     context: createContext,
+    introspection: true, // Enable introspection for Apollo Sandbox
     formatError: (error) => {
       console.error('GraphQL Error:', error);
       return {

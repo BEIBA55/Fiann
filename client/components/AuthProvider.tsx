@@ -17,14 +17,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
-    // Mark as hydrated after first render
     if (!hasHydrated) {
       setHasHydrated(true);
     }
   }, [hasHydrated, setHasHydrated]);
 
   useEffect(() => {
-    // If we have a token but no user, restore user from ME query
     if (hasHydrated && token && data?.me && !user) {
       setAuth(data.me, token);
     }
