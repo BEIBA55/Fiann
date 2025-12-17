@@ -38,10 +38,14 @@ describe('Event Flow Integration Test', () => {
     };
 
     // 1. Create event
+    // Use future date (30 days from now)
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 30);
+    
     const createEventInput = {
       title: 'Integration Test Event',
       description: 'This is an integration test event',
-      date: new Date('2024-12-31T10:00:00Z').toISOString(),
+      date: futureDate.toISOString(),
       location: 'Test Location',
       capacity: 50,
       category: 'CONFERENCE',

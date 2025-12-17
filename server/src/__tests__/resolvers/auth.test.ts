@@ -15,8 +15,9 @@ describe('Auth Resolvers', () => {
 
       expect(result).toHaveProperty('token');
       expect(result).toHaveProperty('user');
-      expect(result.user.email).toBe(input.email);
-      expect(result.user.name).toBe(input.name);
+      expect(result.user).not.toBeNull();
+      expect(result.user!.email).toBe(input.email);
+      expect(result.user!.name).toBe(input.name);
     });
 
     it('should fail if email already exists', async () => {
@@ -69,7 +70,8 @@ describe('Auth Resolvers', () => {
 
       expect(result).toHaveProperty('token');
       expect(result).toHaveProperty('user');
-      expect(result.user.email).toBe(input.email);
+      expect(result.user).not.toBeNull();
+      expect(result.user!.email).toBe(input.email);
     });
 
     it('should fail with incorrect password', async () => {

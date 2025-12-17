@@ -23,10 +23,14 @@ describe('Registration Resolvers', () => {
       role: 'USER',
     });
 
+    // Use future date (30 days from now)
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 30);
+    
     event = await Event.create({
       title: 'Test Event',
       description: 'Test description',
-      date: new Date('2024-12-31T10:00:00Z'),
+      date: futureDate,
       location: 'Test Location',
       capacity: 100,
       organizerId: organizer._id,
@@ -53,8 +57,11 @@ describe('Registration Resolvers', () => {
       );
 
       expect(result).toBeDefined();
-      expect(result.userId.toString()).toBe(user._id.toString());
-      expect(result.eventId.toString()).toBe(event._id.toString());
+      // userId and eventId are populated objects, check their _id
+      expect(result.userId).toBeDefined();
+      expect((result.userId as any)._id?.toString() || (result.userId as any).id?.toString()).toBe(user._id.toString());
+      expect(result.eventId).toBeDefined();
+      expect((result.eventId as any)._id?.toString() || (result.eventId as any).id?.toString()).toBe(event._id.toString());
       expect(result.status).toBe('PENDING');
     });
 
@@ -84,11 +91,15 @@ describe('Registration Resolvers', () => {
     });
 
     it('should check event capacity', async () => {
+      // Use future date (30 days from now)
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 30);
+      
       const smallEvent = await Event.create({
         title: 'Small Event',
-        description: 'Test',
-        date: new Date('2024-12-31T10:00:00Z'),
-        location: 'Test',
+        description: 'Test Description for Small Event',
+        date: futureDate,
+        location: 'Test Location',
         capacity: 1,
         organizerId: organizer._id,
         status: 'PUBLISHED',

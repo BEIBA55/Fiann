@@ -48,7 +48,7 @@ export const authResolvers = {
   },
 
   Mutation: {
-    register: async (_: any, { input }: { input: any }) => {
+    register: async (_: any, { input }: { input: any }, context?: Context) => {
       try {
         const validatedInput = registerInputSchema.parse(input);
         
@@ -71,7 +71,7 @@ export const authResolvers = {
       }
     },
 
-    login: async (_: any, { input }: { input: any }) => {
+    login: async (_: any, { input }: { input: any }, context?: Context) => {
       try {
         const validatedInput = loginInputSchema.parse(input);
         
