@@ -203,7 +203,6 @@ npm run test:coverage
 
 ### WebSocket Endpoint
 - **Разработка**: `ws://localhost:4000/graphql`
-- **Продакшн**: `wss://your-domain.com/graphql`
 
 ## 🔐 Аутентификация
 
@@ -385,3 +384,6 @@ ISC
 ---
 
 **Примечание**: Не забудьте изменить JWT_SECRET и другие секретные значения в продакшне!
+
+
+**Презентация**: https://www.canva.com/design/DAG7vPyYnDg/BInlidVePMkBKuRw5BuLZQ/edit?utm_content=DAG7vPyYnDg&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
