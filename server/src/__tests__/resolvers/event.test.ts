@@ -24,10 +24,14 @@ describe('Event Resolvers', () => {
 
   describe('createEvent', () => {
     it('should create an event successfully', async () => {
+      // Use future date (30 days from now)
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 30);
+      
       const input = {
         title: 'Test Event',
         description: 'This is a test event description',
-        date: new Date('2024-12-31T10:00:00Z').toISOString(),
+        date: futureDate.toISOString(),
         location: 'Test Location',
         capacity: 100,
         category: 'CONFERENCE',
@@ -46,14 +50,20 @@ describe('Event Resolvers', () => {
 
       expect(result).toBeDefined();
       expect(result.title).toBe(input.title);
-      expect(result.organizerId.toString()).toBe(organizer._id.toString());
+      // organizerId is populated object, check its _id
+      expect(result.organizerId).toBeDefined();
+      expect((result.organizerId as any)._id?.toString() || (result.organizerId as any).id?.toString()).toBe(organizer._id.toString());
     });
 
     it('should require authentication', async () => {
+      // Use future date (30 days from now)
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 30);
+      
       const input = {
         title: 'Test Event',
         description: 'This is a test event description',
-        date: new Date('2024-12-31T10:00:00Z').toISOString(),
+        date: futureDate.toISOString(),
         location: 'Test Location',
         capacity: 100,
         category: 'CONFERENCE',
@@ -71,10 +81,14 @@ describe('Event Resolvers', () => {
 
   describe('updateEvent', () => {
     it('should update event when user is organizer', async () => {
+      // Use future date (30 days from now)
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 30);
+      
       const event = await Event.create({
         title: 'Original Title',
         description: 'Original description',
-        date: new Date('2024-12-31T10:00:00Z'),
+        date: futureDate,
         location: 'Original Location',
         capacity: 100,
         organizerId: organizer._id,
@@ -100,10 +114,14 @@ describe('Event Resolvers', () => {
     });
 
     it('should not allow update by non-organizer', async () => {
+      // Use future date (30 days from now)
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 30);
+      
       const event = await Event.create({
         title: 'Original Title',
         description: 'Original description',
-        date: new Date('2024-12-31T10:00:00Z'),
+        date: futureDate,
         location: 'Original Location',
         capacity: 100,
         organizerId: organizer._id,
@@ -131,11 +149,17 @@ describe('Event Resolvers', () => {
 
   describe('events query', () => {
     beforeEach(async () => {
+      // Use future dates (30 and 60 days from now)
+      const futureDate1 = new Date();
+      futureDate1.setDate(futureDate1.getDate() + 30);
+      const futureDate2 = new Date();
+      futureDate2.setDate(futureDate2.getDate() + 60);
+      
       await Event.create([
         {
           title: 'Event 1',
           description: 'Description 1',
-          date: new Date('2024-06-01T10:00:00Z'),
+          date: futureDate1,
           location: 'Location 1',
           capacity: 100,
           organizerId: organizer._id,
@@ -145,7 +169,7 @@ describe('Event Resolvers', () => {
         {
           title: 'Event 2',
           description: 'Description 2',
-          date: new Date('2024-07-01T10:00:00Z'),
+          date: futureDate2,
           location: 'Location 2',
           capacity: 200,
           organizerId: organizer._id,
