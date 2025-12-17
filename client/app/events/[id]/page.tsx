@@ -1,10 +1,10 @@
 'use client';
 
-import { useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation, useSubscription, useApolloClient } from '@apollo/client';
 import { useParams, useRouter } from 'next/navigation';
 import { EVENT, COMMENTS, MY_REGISTRATIONS } from '@/lib/graphql/queries';
 import { CREATE_REGISTRATION, CREATE_COMMENT, CANCEL_REGISTRATION } from '@/lib/graphql/mutations';
-import { COMMENT_ADDED, REGISTRATION_CREATED } from '@/lib/graphql/subscriptions';
+import { COMMENT_ADDED, REGISTRATION_CREATED, REGISTRATION_UPDATED } from '@/lib/graphql/subscriptions';
 import { Header } from '@/components/Header';
 import { useAuthStore } from '@/store/auth-store';
 import { useState, useEffect } from 'react';
@@ -14,6 +14,7 @@ export default function EventDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { isAuthenticated, hasHydrated, token, user } = useAuthStore();
+  const client = useApolloClient();
   const [commentText, setCommentText] = useState('');
   const [rating, setRating] = useState(5);
 
@@ -26,12 +27,12 @@ export default function EventDetailPage() {
     }
   }, [hasHydrated, isAuthenticated, token, router]);
 
-  const { data, loading, error } = useQuery(EVENT, {
+  const { data, loading, error, refetch: refetchEvent } = useQuery(EVENT, {
     variables: { id: eventId },
     skip: !hasHydrated || !isAuthenticated || !eventId,
   });
 
-  const { data: commentsData } = useQuery(COMMENTS, {
+  const { data: commentsData, refetch: refetchComments } = useQuery(COMMENTS, {
     variables: { eventId: eventId },
     skip: !hasHydrated || !isAuthenticated || !eventId,
   });
@@ -40,19 +41,147 @@ export default function EventDetailPage() {
     skip: !hasHydrated || !isAuthenticated,
   });
 
+  // Реалтайм подписка на новые комментарии
+  const { data: commentSubscriptionData, error: commentSubError } = useSubscription(COMMENT_ADDED, {
+    variables: { eventId: eventId },
+    skip: !hasHydrated || !isAuthenticated || !eventId,
+    onData: ({ data: subData }) => {
+      if (subData?.data?.commentAdded) {
+        const newComment = subData.data.commentAdded;
+        console.log('📨 Получен новый комментарий через subscription:', newComment);
+        // Обновляем кэш Apollo напрямую
+        try {
+          const updateResult = client.cache.updateQuery(
+            { query: COMMENTS, variables: { eventId: eventId } },
+            (existingData: any) => {
+              if (!existingData) {
+                console.log('⚠️ Нет данных в кэше, делаем refetch');
+                // Если данных нет, делаем refetch
+                setTimeout(() => refetchComments(), 100);
+                return existingData;
+              }
+              // Проверяем, нет ли уже такого комментария (чтобы избежать дубликатов)
+              const commentExists = existingData.comments?.some((c: any) => c.id === newComment.id);
+              if (commentExists) {
+                console.log('⚠️ Комментарий уже существует в кэше');
+                return existingData;
+              }
+              console.log('✅ Обновляем кэш комментариев');
+              return {
+                comments: [...(existingData.comments || []), newComment],
+              };
+            }
+          );
+          // Если updateQuery вернул undefined, делаем refetch
+          if (!updateResult) {
+            console.log('⚠️ updateQuery вернул undefined, делаем refetch');
+            setTimeout(() => refetchComments(), 100);
+          }
+        } catch (error) {
+          console.error('❌ Ошибка обновления кэша комментариев:', error);
+          setTimeout(() => refetchComments(), 100);
+        }
+      }
+    },
+  });
+
+  // Реалтайм подписка на новые регистрации
+  const { data: registrationSubData, error: registrationSubError } = useSubscription(REGISTRATION_CREATED, {
+    variables: { eventId: eventId },
+    skip: !hasHydrated || !isAuthenticated || !eventId,
+    onData: ({ data: subData }) => {
+      if (subData?.data?.registrationCreated) {
+        console.log('📨 Получена новая регистрация через subscription:', subData.data.registrationCreated);
+        // Обновляем счетчик регистраций в кэше события
+        try {
+          const updateResult = client.cache.updateQuery(
+            { query: EVENT, variables: { id: eventId } },
+            (existingData: any) => {
+              if (!existingData?.event) {
+                console.log('⚠️ Нет данных события в кэше, делаем refetch');
+                setTimeout(() => refetchEvent(), 100);
+                return existingData;
+              }
+              const newCount = (existingData.event.registrationsCount || 0) + 1;
+              console.log(`✅ Обновляем счетчик регистраций: ${existingData.event.registrationsCount} → ${newCount}`);
+              return {
+                event: {
+                  ...existingData.event,
+                  registrationsCount: newCount,
+                },
+              };
+            }
+          );
+          // Если updateQuery вернул undefined, делаем refetch
+          if (!updateResult) {
+            console.log('⚠️ updateQuery вернул undefined, делаем refetch');
+            setTimeout(() => refetchEvent(), 100);
+          }
+        } catch (error) {
+          console.error('❌ Ошибка обновления кэша регистраций:', error);
+          setTimeout(() => refetchEvent(), 100);
+        }
+      }
+    },
+  });
+
+  // Реалтайм подписка на обновления регистраций
+  const { data: registrationUpdatedSubData, error: registrationUpdatedSubError } = useSubscription(REGISTRATION_UPDATED, {
+    variables: { eventId: eventId },
+    skip: !hasHydrated || !isAuthenticated || !eventId,
+    onData: ({ data: subData }) => {
+      if (subData?.data?.registrationUpdated) {
+        const updatedReg = subData.data.registrationUpdated;
+        console.log('📨 Получено обновление регистрации через subscription:', updatedReg);
+        // Если регистрация отменена, уменьшаем счетчик
+        if (updatedReg.status === 'CANCELLED') {
+          try {
+            const updateResult = client.cache.updateQuery(
+              { query: EVENT, variables: { id: eventId } },
+              (existingData: any) => {
+                if (!existingData?.event) {
+                  console.log('⚠️ Нет данных события в кэше, делаем refetch');
+                  setTimeout(() => refetchEvent(), 100);
+                  return existingData;
+                }
+                const newCount = Math.max(0, (existingData.event.registrationsCount || 0) - 1);
+                console.log(`✅ Обновляем счетчик регистраций (отмена): ${existingData.event.registrationsCount} → ${newCount}`);
+                return {
+                  event: {
+                    ...existingData.event,
+                    registrationsCount: newCount,
+                  },
+                };
+              }
+            );
+            // Если updateQuery вернул undefined, делаем refetch
+            if (!updateResult) {
+              console.log('⚠️ updateQuery вернул undefined, делаем refetch');
+              setTimeout(() => refetchEvent(), 100);
+            }
+          } catch (error) {
+            console.error('❌ Ошибка обновления кэша при отмене регистрации:', error);
+            setTimeout(() => refetchEvent(), 100);
+          }
+        } else {
+          // Для других обновлений просто обновляем данные события
+          console.log('🔄 Обновление регистрации (не отмена), делаем refetch');
+          setTimeout(() => refetchEvent(), 100);
+        }
+      }
+    },
+  });
+
   const [createRegistration, { loading: registering }] = useMutation(CREATE_REGISTRATION, {
-    refetchQueries: [{ query: EVENT, variables: { id: eventId } }],
+    // Убрали refetchQueries - подписки обновят кэш автоматически
   });
 
   const [cancelRegistration, { loading: canceling }] = useMutation(CANCEL_REGISTRATION, {
-    refetchQueries: [
-      { query: EVENT, variables: { id: eventId } },
-      { query: MY_REGISTRATIONS },
-    ],
+    // Убрали refetchQueries - подписки обновят кэш автоматически
   });
 
   const [createComment] = useMutation(CREATE_COMMENT, {
-    refetchQueries: [{ query: COMMENTS, variables: { eventId: eventId } }],
+    // Убрали refetchQueries - подписки обновят кэш автоматически
   });
 
 

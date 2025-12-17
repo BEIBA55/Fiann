@@ -129,10 +129,21 @@ export const registrationResolvers = {
         await registration.populate('eventId', 'title date location');
 
         const regObj = registration.toObject();
+        // Извлекаем eventId как строку (может быть ObjectId или объект после populate)
+        const eventIdStr = typeof regObj.eventId === 'object' && regObj.eventId?._id
+          ? regObj.eventId._id.toString()
+          : (regObj.eventId?.toString() || validatedInput.eventId);
+        
+        console.log('📤 Публикуем REGISTRATION_CREATED для eventId:', eventIdStr);
+        
         // Publish subscription
         pubsub.publish(SubscriptionEvent.REGISTRATION_CREATED, {
-          registrationCreated: { ...regObj, id: regObj._id.toString() },
-          eventId: validatedInput.eventId,
+          registrationCreated: { 
+            ...regObj, 
+            id: regObj._id.toString(),
+            eventId: eventIdStr,
+          },
+          eventId: eventIdStr,
         });
 
         return { ...regObj, id: regObj._id.toString() };
@@ -172,10 +183,21 @@ export const registrationResolvers = {
         await registration.populate('eventId', 'title date location');
 
         const regObj = registration.toObject();
+        // Извлекаем eventId как строку (может быть ObjectId или объект после populate)
+        const eventIdStr = typeof regObj.eventId === 'object' && regObj.eventId?._id
+          ? regObj.eventId._id.toString()
+          : (regObj.eventId?.toString() || registration.eventId?.toString() || registration.eventId);
+        
+        console.log('📤 Публикуем REGISTRATION_UPDATED для eventId:', eventIdStr);
+        
         // Publish subscription
         pubsub.publish(SubscriptionEvent.REGISTRATION_UPDATED, {
-          registrationUpdated: { ...regObj, id: regObj._id.toString() },
-          eventId: registration.eventId.toString(),
+          registrationUpdated: { 
+            ...regObj, 
+            id: regObj._id.toString(),
+            eventId: eventIdStr,
+          },
+          eventId: eventIdStr,
         });
 
         return { ...regObj, id: regObj._id.toString() };
@@ -202,10 +224,21 @@ export const registrationResolvers = {
         await registration.populate('eventId', 'title date location');
 
         const regObj = registration.toObject();
+        // Извлекаем eventId как строку (может быть ObjectId или объект после populate)
+        const eventIdStr = typeof regObj.eventId === 'object' && regObj.eventId?._id
+          ? regObj.eventId._id.toString()
+          : (regObj.eventId?.toString() || registration.eventId?.toString() || registration.eventId);
+        
+        console.log('📤 Публикуем REGISTRATION_UPDATED (CANCELLED) для eventId:', eventIdStr);
+        
         // Publish subscription
         pubsub.publish(SubscriptionEvent.REGISTRATION_UPDATED, {
-          registrationUpdated: { ...regObj, id: regObj._id.toString() },
-          eventId: registration.eventId.toString(),
+          registrationUpdated: { 
+            ...regObj, 
+            id: regObj._id.toString(),
+            eventId: eventIdStr,
+          },
+          eventId: eventIdStr,
         });
 
         return { ...regObj, id: regObj._id.toString() };

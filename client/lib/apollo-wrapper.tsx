@@ -30,7 +30,35 @@ export function ApolloWrapper({ children }: { children: ReactNode }) {
               url: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:4000/graphql',
               connectionParams: () => {
                 const token = localStorage.getItem('token');
-                return token ? { authorization: `Bearer ${token}` } : {};
+                const params = token ? { authorization: `Bearer ${token}` } : {};
+                console.log('🔌 Пытаемся подключиться к WebSocket:', process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:4000/graphql', params.authorization ? 'с токеном' : 'без токена');
+                return params;
+              },
+              shouldRetry: () => true,
+              retryAttempts: 5,
+              retryWait: async function* retryWait() {
+                for (let i = 0; i < 5; i++) {
+                  yield new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1)));
+                }
+              },
+              on: {
+                connected: () => {
+                  console.log('✅ WebSocket подключен для subscriptions');
+                },
+                error: (error) => {
+                  console.error('❌ WebSocket ошибка:', error);
+                  console.error('Детали ошибки:', {
+                    message: error.message,
+                    type: error.type,
+                    target: error.target,
+                  });
+                },
+                closed: () => {
+                  console.log('⚠️ WebSocket соединение закрыто');
+                },
+                opened: () => {
+                  console.log('🔌 WebSocket соединение открыто');
+                },
               },
             })
           )

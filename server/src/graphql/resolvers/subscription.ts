@@ -15,7 +15,14 @@ export const subscriptionResolvers = {
       subscribe: withFilter(
         () => pubsub.asyncIterator([SubscriptionEvent.REGISTRATION_CREATED]),
         (payload, variables) => {
-          return payload.registrationCreated.eventId.toString() === variables.eventId;
+          // Проверяем eventId из payload или из отдельного поля
+          const regEventId = payload.registrationCreated?.eventId?.toString() || 
+                             payload.registrationCreated?.eventId || 
+                             payload.eventId?.toString() || 
+                             payload.eventId;
+          const matches = regEventId === variables.eventId;
+          console.log(`🔍 Фильтр REGISTRATION_CREATED: payload.eventId=${regEventId}, variables.eventId=${variables.eventId}, matches=${matches}`);
+          return matches;
         }
       ),
     },
@@ -24,7 +31,14 @@ export const subscriptionResolvers = {
       subscribe: withFilter(
         () => pubsub.asyncIterator([SubscriptionEvent.REGISTRATION_UPDATED]),
         (payload, variables) => {
-          return payload.registrationUpdated.eventId.toString() === variables.eventId;
+          // Проверяем eventId из payload или из отдельного поля
+          const regEventId = payload.registrationUpdated?.eventId?.toString() || 
+                             payload.registrationUpdated?.eventId || 
+                             payload.eventId?.toString() || 
+                             payload.eventId;
+          const matches = regEventId === variables.eventId;
+          console.log(`🔍 Фильтр REGISTRATION_UPDATED: payload.eventId=${regEventId}, variables.eventId=${variables.eventId}, matches=${matches}`);
+          return matches;
         }
       ),
     },
@@ -33,7 +47,14 @@ export const subscriptionResolvers = {
       subscribe: withFilter(
         () => pubsub.asyncIterator([SubscriptionEvent.COMMENT_ADDED]),
         (payload, variables) => {
-          return payload.commentAdded.eventId.toString() === variables.eventId;
+          // Проверяем eventId из payload или из отдельного поля
+          const commentEventId = payload.commentAdded?.eventId?.toString() || 
+                                 payload.commentAdded?.eventId || 
+                                 payload.eventId?.toString() || 
+                                 payload.eventId;
+          const matches = commentEventId === variables.eventId;
+          console.log(`🔍 Фильтр COMMENT_ADDED: payload.eventId=${commentEventId}, variables.eventId=${variables.eventId}, matches=${matches}`);
+          return matches;
         }
       ),
     },

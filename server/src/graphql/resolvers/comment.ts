@@ -71,10 +71,21 @@ export const commentResolvers = {
         await comment.populate('eventId', 'title');
 
         const commentObj = comment.toObject();
+        // Извлекаем eventId как строку (может быть ObjectId или объект после populate)
+        const eventIdStr = typeof commentObj.eventId === 'object' && commentObj.eventId?._id
+          ? commentObj.eventId._id.toString()
+          : (commentObj.eventId?.toString() || validatedInput.eventId);
+        
+        console.log('📤 Публикуем COMMENT_ADDED для eventId:', eventIdStr);
+        
         // Publish subscription
         pubsub.publish(SubscriptionEvent.COMMENT_ADDED, {
-          commentAdded: { ...commentObj, id: commentObj._id.toString() },
-          eventId: validatedInput.eventId,
+          commentAdded: { 
+            ...commentObj, 
+            id: commentObj._id.toString(),
+            eventId: eventIdStr,
+          },
+          eventId: eventIdStr,
         });
 
         return { ...commentObj, id: commentObj._id.toString() };

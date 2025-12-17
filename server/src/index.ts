@@ -79,6 +79,21 @@ async function startServer() {
     path: '/graphql',
   });
 
+  // Добавляем обработку событий WebSocket для отладки
+  wsServer.on('connection', (ws, req) => {
+    console.log('🔌 WebSocket подключение установлено:', req.url);
+    ws.on('error', (error) => {
+      console.error('❌ WebSocket ошибка:', error);
+    });
+    ws.on('close', () => {
+      console.log('⚠️ WebSocket соединение закрыто');
+    });
+  });
+
+  wsServer.on('error', (error) => {
+    console.error('❌ WebSocket Server ошибка:', error);
+  });
+
   useServer(
     {
       schema,
@@ -89,16 +104,29 @@ async function startServer() {
           const { verifyToken } = await import('./utils/auth');
           try {
             const payload = verifyToken(token.replace('Bearer ', ''));
+            console.log('✅ WebSocket аутентификация успешна для пользователя:', payload.userId);
             return {
               userId: payload.userId,
               userRole: payload.role,
               isAuthenticated: true,
             };
-          } catch {
+          } catch (error) {
+            console.log('⚠️ WebSocket аутентификация не удалась');
             return { isAuthenticated: false };
           }
         }
+        console.log('⚠️ WebSocket подключение без токена');
         return { isAuthenticated: false };
+      },
+      onConnect: (ctx) => {
+        console.log('🔌 GraphQL WebSocket подключение установлено');
+        return true;
+      },
+      onDisconnect: (ctx, code, reason) => {
+        console.log('⚠️ GraphQL WebSocket отключен:', code, reason);
+      },
+      onError: (ctx, msg, errors) => {
+        console.error('❌ GraphQL WebSocket ошибка:', msg, errors);
       },
     },
     wsServer
