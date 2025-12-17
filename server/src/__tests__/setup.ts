@@ -21,3 +21,5 @@ beforeEach(async () => {
   }
 });
 
+// Пустой тест, чтобы Jest не ругался
+test('setup placeholder', () => {});
